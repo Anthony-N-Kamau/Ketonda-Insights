@@ -109,7 +109,7 @@ async function readJson(fetchImpl, url, headers) {
       ...headers
     },
     signal: AbortSignal.timeout(10000),
-    redirect: 'error'
+    redirect: 'follow'
   });
 
   if (!response.ok || !response.body) {
