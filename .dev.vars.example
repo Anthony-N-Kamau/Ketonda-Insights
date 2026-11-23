@@ -1,0 +1,6 @@
+# Set to your project's real technical contact for live SEC filings.
+SEC_USER_AGENT="Ketonda Insights admin@example.com"
+# Only set to true if your plan permits displaying the press feed to this audience.
+FMP_PUBLIC_NEWS=false
+# Add your actual credential only in .dev.vars (local) or Cloudflare Secrets.
+# FMP_API_KEY=
