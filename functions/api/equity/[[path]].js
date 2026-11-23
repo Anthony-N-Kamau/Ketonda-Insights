@@ -1,8 +1,8 @@
 import directory from '../../_data/sec-listings.json';
 
 const SEC = 'https://data.sec.gov/submissions/';
-const GOOGLE_NEWS =
-  'https://news.google.com/rss/search?q=';
+const SEC_FACTS = 'https://data.sec.gov/api/xbrl/companyfacts/';
+const GOOGLE_NEWS = 'https://news.google.com/rss/search?q=';
 const SYMBOL = /^[A-Z0-9][A-Z0-9.-]{0,19}$/;
 const QUERY = /^[\p{L}\p{M}\p{N} .,&'’/()-]+$/u;
 const FORMS = /^(8-K|6-K|10-Q|10-K|20-F|40-F)(\/A)?$/;
@@ -106,10 +106,10 @@ function search(query) {
 async function readText(fetchImpl, url, headers = {}) {
   const response = await fetchImpl(url, {
     headers: {
-      Accept: 'application/rss+xml, application/xml, text/xml, */*',
+      Accept: 'application/json, application/rss+xml, application/xml, text/xml, */*',
       ...headers
     },
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(15000),
     redirect: 'follow'
   });
 
@@ -134,7 +134,7 @@ async function readText(fetchImpl, url, headers = {}) {
 
       size += value.byteLength;
 
-      if (size > 1_500_000) {
+      if (size > 8_000_000) {
         await reader.cancel();
         throw new Error('Oversize upstream response');
       }
@@ -297,10 +297,416 @@ function newsItems(xml, now) {
     .map(({ timestamp, ...item }) => item);
 }
 
+function latestAnnualValue(concept, units, end) {
+  const candidates = [];
+
+  for (const unit of Object.values(units || {})) {
+    for (const row of unit) {
+      if (
+        row.end === end &&
+        Number.isFinite(row.val) &&
+        row.val !== 0
+      ) {
+        candidates.push(row);
+      }
+    }
+  }
+
+  if (!candidates.length) {
+    return null;
+  }
+
+  candidates.sort((a, b) => {
+    const aStart = a.start || '';
+    const bStart = b.start || '';
+
+    return bStart.localeCompare(aStart) ||
+      String(b.filed || '').localeCompare(String(a.filed || ''));
+  });
+
+  return candidates[0].val;
+}
+
+function buildAnnualPeriods(facts) {
+  const usGaap = facts?.facts?.['dei'] ? facts.facts : facts?.facts;
+  const gaap = facts?.facts?.['us-gaap'];
+
+  if (!gaap) {
+    return [];
+  }
+
+  const revenueConcepts = [
+    'Revenues',
+    'RevenueFromContractWithCustomerExcludingAssessedTax',
+    'SalesRevenueNet'
+  ];
+
+  const netIncomeConcepts = [
+    'NetIncomeLoss',
+    'ProfitLoss'
+  ];
+
+  const assetConcepts = ['Assets'];
+  const liabilityConcepts = ['Liabilities'];
+  const equityConcepts = [
+    'StockholdersEquity',
+    'StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'
+  ];
+
+  const currentAssetsConcepts = ['AssetsCurrent'];
+  const currentLiabilitiesConcepts = ['LiabilitiesCurrent'];
+  const operatingIncomeConcepts = [
+    'OperatingIncomeLoss',
+    'IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest'
+  ];
+
+  const grossProfitConcepts = [
+    'GrossProfit',
+    'GrossProfitLoss'
+  ];
+
+  const operatingCashFlowConcepts = [
+    'NetCashProvidedByUsedInOperatingActivities',
+    'NetCashProvidedByUsedInOperatingActivitiesContinuingOperations'
+  ];
+
+  const capexConcepts = [
+    'PaymentsToAcquirePropertyPlantAndEquipment',
+    'PaymentsToAcquirePropertyPlantAndEquipmentAndIntangibleAssets'
+  ];
+
+  const debtConcepts = [
+    'LongTermDebtNoncurrent',
+    'LongTermDebt',
+    'DebtLongtermAndShorttermCombinedAmount'
+  ];
+
+  const cashConcepts = [
+    'CashAndCashEquivalentsAtCarryingValue',
+    'CashAndCashEquivalents'
+  ];
+
+  const revenueEnds = new Set();
+
+  for (const concept of revenueConcepts) {
+    const units = gaap[concept]?.units;
+
+    if (!units) {
+      continue;
+    }
+
+    for (const unit of Object.values(units)) {
+      for (const row of unit) {
+        if (
+          row.form === '10-K' &&
+          row.fp === 'FY' &&
+          day(row.end) &&
+          Number.isFinite(row.val)
+        ) {
+          revenueEnds.add(row.end);
+        }
+      }
+    }
+  }
+
+  const periods = [];
+
+  for (const end of [...revenueEnds].sort((a, b) => b.localeCompare(a)).slice(0, 5)) {
+    const value = concept =>
+      latestAnnualValue(
+        concept,
+        gaap[concept]?.units,
+        end
+      );
+
+    const revenue =
+      revenueConcepts.map(value).find(item => item !== null) ?? null;
+
+    const netIncome =
+      netIncomeConcepts.map(value).find(item => item !== null) ?? null;
+
+    const operatingIncome =
+      operatingIncomeConcepts.map(value).find(item => item !== null) ?? null;
+
+    const grossProfit =
+      grossProfitConcepts.map(value).find(item => item !== null) ?? null;
+
+    const totalAssets = value(assetConcepts[0]);
+    const totalLiabilities = value(liabilityConcepts[0]);
+
+    const totalEquity =
+      equityConcepts.map(value).find(item => item !== null) ?? null;
+
+    const currentAssets = value(currentAssetsConcepts[0]);
+    const currentLiabilities = value(currentLiabilitiesConcepts[0]);
+
+    const operatingCashFlow =
+      operatingCashFlowConcepts.map(value).find(item => item !== null) ?? null;
+
+    const capitalExpenditure =
+      capexConcepts.map(value).find(item => item !== null) ?? null;
+
+    const totalDebt =
+      debtConcepts.map(value).find(item => item !== null) ?? null;
+
+    const cash = cashConcepts.map(value).find(item => item !== null) ?? null;
+
+    const freeCashFlow =
+      operatingCashFlow !== null && capitalExpenditure !== null
+        ? operatingCashFlow - Math.abs(capitalExpenditure)
+        : null;
+
+    periods.push({
+      periodEnd: end,
+      revenue,
+      grossProfit,
+      operatingIncome,
+      netIncome,
+      totalAssets,
+      totalLiabilities,
+      totalEquity,
+      currentAssets,
+      currentLiabilities,
+      totalDebt,
+      cash,
+      operatingCashFlow,
+      capitalExpenditure:
+        capitalExpenditure === null ? null : Math.abs(capitalExpenditure),
+      freeCashFlow
+    });
+  }
+
+  return periods;
+}
+
+const ratio = (numerator, denominator) =>
+  Number.isFinite(numerator) &&
+  Number.isFinite(denominator) &&
+  denominator !== 0
+    ? numerator / denominator
+    : null;
+
+const percent = value =>
+  value === null ? null : value * 100;
+
+function calculateRatios(periods) {
+  if (!periods.length) {
+    return {
+      status: 'empty',
+      latest: {},
+      trend: [],
+      assessment: []
+    };
+  }
+
+  const latest = periods[0];
+  const previous = periods[1] || null;
+
+  const averageEquity =
+    previous?.totalEquity && latest.totalEquity
+      ? (previous.totalEquity + latest.totalEquity) / 2
+      : latest.totalEquity;
+
+  const grossMargin = percent(
+    ratio(latest.grossProfit, latest.revenue)
+  );
+
+  const operatingMargin = percent(
+    ratio(latest.operatingIncome, latest.revenue)
+  );
+
+  const netMargin = percent(
+    ratio(latest.netIncome, latest.revenue)
+  );
+
+  const returnOnEquity = percent(
+    ratio(latest.netIncome, averageEquity)
+  );
+
+  const currentRatio = ratio(
+    latest.currentAssets,
+    latest.currentLiabilities
+  );
+
+  const quickRatio = ratio(
+    latest.currentAssets,
+    latest.currentLiabilities
+  );
+
+  const debtToEquity = ratio(
+    latest.totalDebt,
+    latest.totalEquity
+  );
+
+  const debtToAssets = ratio(
+    latest.totalDebt,
+    latest.totalAssets
+  );
+
+  const assetTurnover = ratio(
+    latest.revenue,
+    latest.totalAssets
+  );
+
+  const operatingCashFlowMargin = percent(
+    ratio(latest.operatingCashFlow, latest.revenue)
+  );
+
+  const freeCashFlowMargin = percent(
+    ratio(latest.freeCashFlow, latest.revenue)
+  );
+
+  const revenueGrowth =
+    previous?.revenue && latest.revenue
+      ? percent((latest.revenue - previous.revenue) / Math.abs(previous.revenue))
+      : null;
+
+  const netIncomeGrowth =
+    previous?.netIncome && latest.netIncome
+      ? percent(
+          (latest.netIncome - previous.netIncome) /
+            Math.abs(previous.netIncome)
+        )
+      : null;
+
+  const assessment = [];
+
+  if (grossMargin !== null) {
+    assessment.push({
+      label: 'Gross margin',
+      value: grossMargin,
+      signal:
+        grossMargin >= 40 ? 'Strong' :
+        grossMargin >= 20 ? 'Moderate' :
+        'Low'
+    });
+  }
+
+  if (operatingMargin !== null) {
+    assessment.push({
+      label: 'Operating margin',
+      value: operatingMargin,
+      signal:
+        operatingMargin >= 15 ? 'Strong' :
+        operatingMargin >= 5 ? 'Moderate' :
+        'Low'
+    });
+  }
+
+  if (netMargin !== null) {
+    assessment.push({
+      label: 'Net margin',
+      value: netMargin,
+      signal:
+        netMargin >= 10 ? 'Strong' :
+        netMargin >= 3 ? 'Moderate' :
+        'Low'
+    });
+  }
+
+  if (returnOnEquity !== null) {
+    assessment.push({
+      label: 'Return on equity',
+      value: returnOnEquity,
+      signal:
+        returnOnEquity >= 15 ? 'Strong' :
+        returnOnEquity >= 8 ? 'Moderate' :
+        'Low'
+    });
+  }
+
+  if (currentRatio !== null) {
+    assessment.push({
+      label: 'Current ratio',
+      value: currentRatio,
+      signal:
+        currentRatio >= 1.5 ? 'Strong' :
+        currentRatio >= 1 ? 'Moderate' :
+        'Low'
+    });
+  }
+
+  if (debtToEquity !== null) {
+    assessment.push({
+      label: 'Debt-to-equity',
+      value: debtToEquity,
+      signal:
+        debtToEquity <= 0.5 ? 'Strong' :
+        debtToEquity <= 1.5 ? 'Moderate' :
+        'High'
+    });
+  }
+
+  if (operatingCashFlowMargin !== null) {
+    assessment.push({
+      label: 'Operating cash-flow margin',
+      value: operatingCashFlowMargin,
+      signal:
+        operatingCashFlowMargin >= 15 ? 'Strong' :
+        operatingCashFlowMargin >= 5 ? 'Moderate' :
+        'Low'
+    });
+  }
+
+  if (freeCashFlowMargin !== null) {
+    assessment.push({
+      label: 'Free cash-flow margin',
+      value: freeCashFlowMargin,
+      signal:
+        freeCashFlowMargin >= 10 ? 'Strong' :
+        freeCashFlowMargin >= 3 ? 'Moderate' :
+        'Low'
+    });
+  }
+
+  if (revenueGrowth !== null) {
+    assessment.push({
+      label: 'Revenue growth',
+      value: revenueGrowth,
+      signal:
+        revenueGrowth >= 10 ? 'Strong' :
+        revenueGrowth >= 0 ? 'Moderate' :
+        'Declining'
+    });
+  }
+
+  if (netIncomeGrowth !== null) {
+    assessment.push({
+      label: 'Net income growth',
+      value: netIncomeGrowth,
+      signal:
+        netIncomeGrowth >= 10 ? 'Strong' :
+        netIncomeGrowth >= 0 ? 'Moderate' :
+        'Declining'
+    });
+  }
+
+  return {
+    status: 'ok',
+    latest: {
+      grossMargin,
+      operatingMargin,
+      netMargin,
+      returnOnEquity,
+      currentRatio,
+      quickRatio,
+      debtToEquity,
+      debtToAssets,
+      assetTurnover,
+      operatingCashFlowMargin,
+      freeCashFlowMargin,
+      revenueGrowth,
+      netIncomeGrowth
+    },
+    trend: periods,
+    assessment
+  };
+}
+
 async function stored(cache, context, feed, identifier, ttl, run) {
   const cacheKey = new Request(
     new URL(
-      `/api/equity/news/${identifier}?__ketonda_v2=${feed}`,
+      `/api/equity/news/${identifier}?__ketonda_v3=${feed}`,
       context.request.url
     )
   );
@@ -384,19 +790,6 @@ async function loadFeed(
       )
     };
   }
-}
-
-function emptyFinancials() {
-  return {
-    quarterly: {
-      currency: '',
-      periods: []
-    },
-    annual: {
-      currency: '',
-      periods: []
-    }
-  };
 }
 
 export async function handleEquity(context, options = {}) {
@@ -499,7 +892,7 @@ export async function handleEquity(context, options = {}) {
       `${GOOGLE_NEWS}${encodeURIComponent(newsQuery)}` +
       `&hl=en-US&gl=US&ceid=US:en`;
 
-    const [filings, press] = await Promise.all([
+    const [filings, financials, press] = await Promise.all([
       loadFeed(
         secReady,
         cache,
@@ -522,6 +915,32 @@ export async function handleEquity(context, options = {}) {
           )
       ),
       loadFeed(
+        secReady,
+        cache,
+        context,
+        'financials',
+        listing.cik,
+        3600,
+        async () => {
+          const facts = await readJson(
+            fetchImpl,
+            `${SEC_FACTS}CIK${listing.cik}.json`,
+            {
+              'User-Agent': userAgent,
+              Accept: 'application/json'
+            }
+          );
+
+          const periods = buildAnnualPeriods(facts);
+          const ratios = calculateRatios(periods);
+
+          return {
+            periods,
+            ratios
+          };
+        }
+      ),
+      loadFeed(
         true,
         cache,
         context,
@@ -536,7 +955,13 @@ export async function handleEquity(context, options = {}) {
       )
     ]);
 
-    const financials = emptyFinancials();
+    const annualPeriods = financials.items?.periods || [];
+    const ratios = financials.items?.ratios || {
+      status: 'empty',
+      latest: {},
+      trend: [],
+      assessment: []
+    };
 
     return json({
       profile: {
@@ -550,7 +975,15 @@ export async function handleEquity(context, options = {}) {
         description: ''
       },
       quote: null,
-      ...financials,
+      quarterly: {
+        currency: '',
+        periods: []
+      },
+      annual: {
+        currency: 'USD',
+        periods: annualPeriods
+      },
+      ratios,
       filings: filings.items,
       filingsStatus: filings.status,
       filingsDebug: filings.debug,
@@ -559,6 +992,8 @@ export async function handleEquity(context, options = {}) {
       pressStatus: press.status,
       pressDebug: press.debug,
       newsSource: 'Google News',
+      financialsStatus: financials.status,
+      financialsDebug: financials.debug,
       retrievedAt: new Date(now).toISOString()
     });
   }
