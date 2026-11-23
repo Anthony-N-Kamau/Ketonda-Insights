@@ -106,7 +106,8 @@ function search(query) {
 async function readText(fetchImpl, url, headers = {}) {
   const response = await fetchImpl(url, {
     headers: {
-      Accept: 'application/json, application/rss+xml, application/xml, text/xml, */*',
+      Accept:
+        'application/json, application/rss+xml, application/xml, text/xml, */*',
       ...headers
     },
     signal: AbortSignal.timeout(15000),
@@ -297,7 +298,7 @@ function newsItems(xml, now) {
     .map(({ timestamp, ...item }) => item);
 }
 
-function latestAnnualValue(concept, units, end) {
+function latestAnnualValue(units, end) {
   const candidates = [];
 
   for (const unit of Object.values(units || {})) {
@@ -328,7 +329,6 @@ function latestAnnualValue(concept, units, end) {
 }
 
 function buildAnnualPeriods(facts) {
-  const usGaap = facts?.facts?.['dei'] ? facts.facts : facts?.facts;
   const gaap = facts?.facts?.['us-gaap'];
 
   if (!gaap) {
@@ -346,15 +346,6 @@ function buildAnnualPeriods(facts) {
     'ProfitLoss'
   ];
 
-  const assetConcepts = ['Assets'];
-  const liabilityConcepts = ['Liabilities'];
-  const equityConcepts = [
-    'StockholdersEquity',
-    'StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'
-  ];
-
-  const currentAssetsConcepts = ['AssetsCurrent'];
-  const currentLiabilitiesConcepts = ['LiabilitiesCurrent'];
   const operatingIncomeConcepts = [
     'OperatingIncomeLoss',
     'IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest'
@@ -363,6 +354,11 @@ function buildAnnualPeriods(facts) {
   const grossProfitConcepts = [
     'GrossProfit',
     'GrossProfitLoss'
+  ];
+
+  const equityConcepts = [
+    'StockholdersEquity',
+    'StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'
   ];
 
   const operatingCashFlowConcepts = [
@@ -411,45 +407,24 @@ function buildAnnualPeriods(facts) {
 
   const periods = [];
 
-  for (const end of [...revenueEnds].sort((a, b) => b.localeCompare(a)).slice(0, 5)) {
+  for (const end of [...revenueEnds]
+    .sort((a, b) => b.localeCompare(a))
+    .slice(0, 5)) {
     const value = concept =>
-      latestAnnualValue(
-        concept,
-        gaap[concept]?.units,
-        end
-      );
+      latestAnnualValue(gaap[concept]?.units, end);
 
-    const revenue =
-      revenueConcepts.map(value).find(item => item !== null) ?? null;
+    const firstAvailable = concepts =>
+      concepts.map(value).find(item => item !== null) ?? null;
 
-    const netIncome =
-      netIncomeConcepts.map(value).find(item => item !== null) ?? null;
-
-    const operatingIncome =
-      operatingIncomeConcepts.map(value).find(item => item !== null) ?? null;
-
-    const grossProfit =
-      grossProfitConcepts.map(value).find(item => item !== null) ?? null;
-
-    const totalAssets = value(assetConcepts[0]);
-    const totalLiabilities = value(liabilityConcepts[0]);
-
-    const totalEquity =
-      equityConcepts.map(value).find(item => item !== null) ?? null;
-
-    const currentAssets = value(currentAssetsConcepts[0]);
-    const currentLiabilities = value(currentLiabilitiesConcepts[0]);
-
-    const operatingCashFlow =
-      operatingCashFlowConcepts.map(value).find(item => item !== null) ?? null;
-
-    const capitalExpenditure =
-      capexConcepts.map(value).find(item => item !== null) ?? null;
-
-    const totalDebt =
-      debtConcepts.map(value).find(item => item !== null) ?? null;
-
-    const cash = cashConcepts.map(value).find(item => item !== null) ?? null;
+    const revenue = firstAvailable(revenueConcepts);
+    const netIncome = firstAvailable(netIncomeConcepts);
+    const operatingIncome = firstAvailable(operatingIncomeConcepts);
+    const grossProfit = firstAvailable(grossProfitConcepts);
+    const totalEquity = firstAvailable(equityConcepts);
+    const operatingCashFlow = firstAvailable(operatingCashFlowConcepts);
+    const capitalExpenditure = firstAvailable(capexConcepts);
+    const totalDebt = firstAvailable(debtConcepts);
+    const cash = firstAvailable(cashConcepts);
 
     const freeCashFlow =
       operatingCashFlow !== null && capitalExpenditure !== null
@@ -462,16 +437,18 @@ function buildAnnualPeriods(facts) {
       grossProfit,
       operatingIncome,
       netIncome,
-      totalAssets,
-      totalLiabilities,
+      totalAssets: value('Assets'),
+      totalLiabilities: value('Liabilities'),
       totalEquity,
-      currentAssets,
-      currentLiabilities,
+      currentAssets: value('AssetsCurrent'),
+      currentLiabilities: value('LiabilitiesCurrent'),
       totalDebt,
       cash,
       operatingCashFlow,
       capitalExpenditure:
-        capitalExpenditure === null ? null : Math.abs(capitalExpenditure),
+        capitalExpenditure === null
+          ? null
+          : Math.abs(capitalExpenditure),
       freeCashFlow
     });
   }
@@ -558,7 +535,10 @@ function calculateRatios(periods) {
 
   const revenueGrowth =
     previous?.revenue && latest.revenue
-      ? percent((latest.revenue - previous.revenue) / Math.abs(previous.revenue))
+      ? percent(
+          (latest.revenue - previous.revenue) /
+            Math.abs(previous.revenue)
+        )
       : null;
 
   const netIncomeGrowth =
@@ -609,9 +589,13 @@ function calculateRatios(periods) {
       label: 'Return on equity',
       value: returnOnEquity,
       signal:
-        returnOnEquity >= 15 ? 'Strong' :
-        returnOnEquity >= 8 ? 'Moderate' :
-        'Low'
+        returnOnEquity >= 100
+          ? 'Very high; review equity base'
+          : returnOnEquity >= 15
+            ? 'Strong'
+            : returnOnEquity >= 8
+              ? 'Moderate'
+              : 'Low'
     });
   }
 
@@ -706,7 +690,7 @@ function calculateRatios(periods) {
 async function stored(cache, context, feed, identifier, ttl, run) {
   const cacheKey = new Request(
     new URL(
-      `/api/equity/news/${identifier}?__ketonda_v3=${feed}`,
+      `/api/equity/news/${identifier}?__ketonda_v4=${feed}`,
       context.request.url
     )
   );
@@ -772,10 +756,14 @@ async function loadFeed(
       fetchItems
     );
 
+    const count = Array.isArray(items)
+      ? items.length
+      : items?.periods?.length || 0;
+
     return {
-      status: items.length ? 'ok' : 'empty',
+      status: count ? 'ok' : 'empty',
       items,
-      debug: items.length
+      debug: count
         ? `${feed} feed loaded successfully`
         : `${feed} feed returned no eligible items`
     };
