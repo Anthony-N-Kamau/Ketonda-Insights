@@ -1,7 +1,8 @@
 import directory from '../../_data/sec-listings.json';
 
 const SEC = 'https://data.sec.gov/submissions/';
-const FMP = 'https://financialmodelingprep.com/stable/news/stock';
+const GOOGLE_NEWS =
+  'https://news.google.com/rss/search?q=';
 const SYMBOL = /^[A-Z0-9][A-Z0-9.-]{0,19}$/;
 const QUERY = /^[\p{L}\p{M}\p{N} .,&'’/()-]+$/u;
 const FORMS = /^(8-K|6-K|10-Q|10-K|20-F|40-F)(\/A)?$/;
@@ -102,10 +103,10 @@ function search(query) {
     }));
 }
 
-async function readJson(fetchImpl, url, headers) {
+async function readText(fetchImpl, url, headers = {}) {
   const response = await fetchImpl(url, {
     headers: {
-      Accept: 'application/json',
+      Accept: 'application/rss+xml, application/xml, text/xml, */*',
       ...headers
     },
     signal: AbortSignal.timeout(10000),
@@ -144,12 +145,39 @@ async function readJson(fetchImpl, url, headers) {
     reader.releaseLock();
   }
 
+  return body + decoder.decode();
+}
+
+async function readJson(fetchImpl, url, headers) {
+  const body = await readText(fetchImpl, url, {
+    Accept: 'application/json',
+    ...headers
+  });
+
   try {
-    return JSON.parse(body + decoder.decode());
+    return JSON.parse(body);
   } catch {
     throw new Error('Upstream response was not valid JSON');
   }
 }
+
+const decodeEntities = value =>
+  value
+    .replaceAll('&amp;', '&')
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&quot;', '"')
+    .replaceAll('&apos;', "'")
+    .replaceAll('&#39;', "'")
+    .replaceAll('&#34;', '"');
+
+const tagValue = (xml, tag) => {
+  const match = xml.match(
+    new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i')
+  );
+
+  return match ? decodeEntities(match[1]).trim() : '';
+};
 
 const secIndex = cik =>
   `https://www.sec.gov/edgar/browse/?CIK=${cik}`;
@@ -220,83 +248,59 @@ function secItems(raw, listing, now) {
     .slice(0, 6);
 }
 
-function pressItems(raw, symbol, now) {
-  if (!Array.isArray(raw)) {
-    throw new Error('Unexpected press response format');
-  }
+function newsItems(xml, now) {
+  const items = [];
+  const entries = xml.split(/<item(?:\s[^>]*)?>/i).slice(1);
 
-  const best = new Map();
-
-  for (const row of raw) {
-    if (
-      !row ||
-      typeof row.symbol !== 'string' ||
-      !row.symbol
-        .split(/[,;\s]+/)
-        .some(value => tickerKey(value) === tickerKey(symbol))
-    ) {
-      continue;
-    }
-
-    const title = clean(row.title, 320);
-    const url = httpsUrl(row.url);
-    const stamp = clean(row.publishedDate, 40);
-    const date = stamp.slice(0, 10);
-
-    const timestamp = Date.parse(
-      stamp.replace(' ', 'T') +
-        (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(
-          stamp.replace(' ', 'T')
-        )
-          ? 'Z'
-          : '')
-    );
+  for (const entry of entries) {
+    const title = tagValue(entry, 'title');
+    const link = httpsUrl(tagValue(entry, 'link'));
+    const source = tagValue(entry, 'source');
+    const published = tagValue(entry, 'pubDate');
+    const timestamp = Date.parse(published);
 
     if (
       !title ||
-      !url ||
-      !day(date) ||
+      !link ||
       !Number.isFinite(timestamp) ||
       timestamp > now + 86_400_000 ||
-      now - timestamp > 90 * 86_400_000
+      now - timestamp > 14 * 86_400_000
     ) {
       continue;
     }
 
-    const publisher =
-      clean(row.publisher, 90) ||
-      clean(row.site, 90) ||
-      new URL(url).hostname;
+    const publisher = clean(source, 120) || 'Google News';
+    const date = new Date(timestamp).toISOString().slice(0, 10);
 
-    const canonical = new URL(url);
-    canonical.search = '';
-    canonical.hash = '';
-
-    const entry = {
-      title,
-      url,
+    items.push({
+      title: clean(title, 320),
+      url: link,
       publisher,
       date,
       timestamp
-    };
+    });
+  }
 
-    const key = canonical.href;
+  const unique = new Map();
 
-    if (!best.has(key) || best.get(key).timestamp < timestamp) {
-      best.set(key, entry);
+  for (const item of items) {
+    const key = item.url;
+
+    if (!unique.has(key) || unique.get(key).timestamp < item.timestamp) {
+      unique.set(key, item);
     }
   }
 
-  return [...best.values()]
+  return [...unique.values()]
     .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, 8)
-    .map(({ timestamp, ...entry }) => entry);
+    .map(({ timestamp, ...item }) => item);
 }
 
 async function stored(cache, context, feed, identifier, ttl, run) {
   const cacheKey = new Request(
     new URL(
-      `/api/equity/news/${identifier}?__ketonda_v1=${feed}`,
+      `/api/equity/news/${identifier}?__ketonda_v2=${feed}`,
       context.request.url
     )
   );
@@ -481,7 +485,6 @@ export async function handleEquity(context, options = {}) {
     }
 
     const userAgent = env.SEC_USER_AGENT?.trim();
-    const apiKey = env.FMP_API_KEY?.trim();
 
     const secReady = Boolean(
       userAgent &&
@@ -489,8 +492,12 @@ export async function handleEquity(context, options = {}) {
         !/example\.(com|org|net)\b/i.test(userAgent)
     );
 
-    const pressReady =
-      env.FMP_PUBLIC_NEWS === 'true' && Boolean(apiKey);
+    const newsQuery =
+      `("${listing.name}" OR ${listing.symbol}) when:7d`;
+
+    const newsUrl =
+      `${GOOGLE_NEWS}${encodeURIComponent(newsQuery)}` +
+      `&hl=en-US&gl=US&ceid=US:en`;
 
     const [filings, press] = await Promise.all([
       loadFeed(
@@ -515,28 +522,17 @@ export async function handleEquity(context, options = {}) {
           )
       ),
       loadFeed(
-        pressReady,
+        true,
         cache,
         context,
-        'fmp',
+        'google-news',
         listing.symbol,
         300,
-        async () => {
-          const url = new URL(FMP);
-
-          url.search = new URLSearchParams({
-            symbols: listing.symbol,
-            page: '0',
-            limit: '20',
-            apikey: apiKey
-          });
-
-          return pressItems(
-            await readJson(fetchImpl, url),
-            listing.symbol,
+        async () =>
+          newsItems(
+            await readText(fetchImpl, newsUrl),
             now
-          );
-        }
+          )
       )
     ]);
 
@@ -562,6 +558,7 @@ export async function handleEquity(context, options = {}) {
       articles: press.items,
       pressStatus: press.status,
       pressDebug: press.debug,
+      newsSource: 'Google News',
       retrievedAt: new Date(now).toISOString()
     });
   }
