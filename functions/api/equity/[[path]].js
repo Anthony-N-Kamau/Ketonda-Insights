@@ -690,7 +690,7 @@ function calculateRatios(periods) {
 async function stored(cache, context, feed, identifier, ttl, run) {
   const cacheKey = new Request(
     new URL(
-      `/api/equity/news/${identifier}?__ketonda_v4=${feed}`,
+      `/api/equity/news/${identifier}?__ketonda_v5=${feed}`,
       context.request.url
     )
   );
