@@ -1,4 +1,4 @@
-import directory from '../../_data/sec-listings.json' with { type: 'json' };
+import directory from '../../_data/sec-listings.json';
 
 const SEC = 'https://data.sec.gov/submissions/';
 const FMP = 'https://financialmodelingprep.com/stable/news/stock';
