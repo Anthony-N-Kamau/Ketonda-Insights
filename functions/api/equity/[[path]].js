@@ -7,7 +7,9 @@ const QUERY = /^[\p{L}\p{M}\p{N} .,&'’/()-]+$/u;
 const FORMS = /^(8-K|6-K|10-Q|10-K|20-F|40-F)(\/A)?$/;
 
 const clean = (value, max) =>
-  typeof value === 'string' ? value.replace(/\s+/gu, ' ').trim().slice(0, max) : '';
+  typeof value === 'string'
+    ? value.replace(/\s+/gu, ' ').trim().slice(0, max)
+    : '';
 
 const normalize = value =>
   value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
@@ -37,6 +39,7 @@ const day = value =>
 const httpsUrl = value => {
   try {
     const url = new URL(value);
+
     return url.protocol === 'https:' &&
       !url.username &&
       !url.password &&
@@ -64,10 +67,13 @@ function search(query) {
   const candidates = [];
 
   for (const row of listings) {
-    if (!SYMBOL.test(row.symbol)) continue;
+    if (!SYMBOL.test(row.symbol)) {
+      continue;
+    }
 
     const displayTicker = tickerKey(row.symbol);
     const index = row.normal.indexOf(term);
+
     const rank =
       displayTicker === symbol ? 0 :
       row.normal === term ? 1 :
@@ -102,12 +108,14 @@ async function readJson(fetchImpl, url, headers) {
       Accept: 'application/json',
       ...headers
     },
-    signal: AbortSignal.timeout(7000),
+    signal: AbortSignal.timeout(10000),
     redirect: 'error'
   });
 
   if (!response.ok || !response.body) {
-    throw new Error('Upstream not available');
+    throw new Error(
+      `Upstream request failed: ${response.status} ${response.statusText}`
+    );
   }
 
   const reader = response.body.getReader();
@@ -119,7 +127,9 @@ async function readJson(fetchImpl, url, headers) {
     for (;;) {
       const { done, value } = await reader.read();
 
-      if (done) break;
+      if (done) {
+        break;
+      }
 
       size += value.byteLength;
 
@@ -134,7 +144,11 @@ async function readJson(fetchImpl, url, headers) {
     reader.releaseLock();
   }
 
-  return JSON.parse(body + decoder.decode());
+  try {
+    return JSON.parse(body + decoder.decode());
+  } catch {
+    throw new Error('Upstream response was not valid JSON');
+  }
 }
 
 const secIndex = cik =>
@@ -150,7 +164,7 @@ function secItems(raw, listing, now) {
       key => Array.isArray(recent[key])
     )
   ) {
-    throw new Error('Unexpected SEC response');
+    throw new Error('Unexpected SEC response format');
   }
 
   const items = [];
@@ -176,6 +190,7 @@ function secItems(raw, listing, now) {
     }
 
     const group = form.split('/')[0];
+
     const type = {
       '8-K': 'Current report',
       '6-K': 'Foreign issuer report',
@@ -207,7 +222,7 @@ function secItems(raw, listing, now) {
 
 function pressItems(raw, symbol, now) {
   if (!Array.isArray(raw)) {
-    throw new Error('Unexpected press response');
+    throw new Error('Unexpected press response format');
   }
 
   const best = new Map();
@@ -227,6 +242,7 @@ function pressItems(raw, symbol, now) {
     const url = httpsUrl(row.url);
     const stamp = clean(row.publishedDate, 40);
     const date = stamp.slice(0, 10);
+
     const timestamp = Date.parse(
       stamp.replace(' ', 'T') +
         (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(
@@ -277,10 +293,10 @@ function pressItems(raw, symbol, now) {
     .map(({ timestamp, ...entry }) => entry);
 }
 
-async function stored(cache, context, feed, symbol, ttl, run) {
+async function stored(cache, context, feed, identifier, ttl, run) {
   const cacheKey = new Request(
     new URL(
-      `/api/equity/news/${symbol}?__ketonda_v1=${feed}`,
+      `/api/equity/news/${identifier}?__ketonda_v1=${feed}`,
       context.request.url
     )
   );
@@ -293,7 +309,7 @@ async function stored(cache, context, feed, symbol, ttl, run) {
         return await hit.json();
       }
     } catch {
-      // Cache miss.
+      // Ignore cache errors and fetch fresh data.
     }
   }
 
@@ -331,7 +347,8 @@ async function loadFeed(
   if (!enabled) {
     return {
       status: 'disabled',
-      items: []
+      items: [],
+      debug: `${feed} feed is disabled`
     };
   }
 
@@ -347,12 +364,20 @@ async function loadFeed(
 
     return {
       status: items.length ? 'ok' : 'empty',
-      items
+      items,
+      debug: items.length
+        ? `${feed} feed loaded successfully`
+        : `${feed} feed returned no eligible items`
     };
-  } catch {
+  } catch (error) {
+    console.error(`${feed} feed failed:`, error);
+
     return {
       status: 'unavailable',
-      items: []
+      items: [],
+      debug: String(
+        error && error.message ? error.message : error
+      )
     };
   }
 }
@@ -480,7 +505,10 @@ export async function handleEquity(context, options = {}) {
             await readJson(
               fetchImpl,
               `${SEC}CIK${listing.cik}.json`,
-              { 'User-Agent': userAgent }
+              {
+                'User-Agent': userAgent,
+                Accept: 'application/json'
+              }
             ),
             listing,
             now
@@ -495,6 +523,7 @@ export async function handleEquity(context, options = {}) {
         300,
         async () => {
           const url = new URL(FMP);
+
           url.search = new URLSearchParams({
             symbols: listing.symbol,
             page: '0',
@@ -528,9 +557,11 @@ export async function handleEquity(context, options = {}) {
       ...financials,
       filings: filings.items,
       filingsStatus: filings.status,
+      filingsDebug: filings.debug,
       filingsUrl: secIndex(listing.cik),
       articles: press.items,
       pressStatus: press.status,
+      pressDebug: press.debug,
       retrievedAt: new Date(now).toISOString()
     });
   }
