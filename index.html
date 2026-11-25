@@ -341,6 +341,49 @@
   .foot-bottom { margin-top: 48px; display: flex; flex-direction: column; gap: 12px; border-top: 1px solid hsl(var(--hairline)); padding-top: 24px; font-size: 11.5px; color: hsl(var(--ink-soft)); }
   @media (min-width: 640px) { .foot-bottom { flex-direction: row; align-items: center; justify-content: space-between; } }
 
+  /* ---- methodology ---- */
+  [id] { scroll-margin-top: 84px; }
+  h3.section-title { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: -0.02em; }
+  .formula-row.three { grid-template-columns: 1fr; }
+  @media (min-width: 768px) { .formula-row.three { grid-template-columns: 150px 1fr 1.2fr; gap: 20px; align-items: baseline; } }
+  .formula-row.three dd { margin: 0; }
+  .formula-row .note { font-family: var(--font-body); font-size: 12px; line-height: 1.65; color: hsl(var(--ink-soft)); }
+  .example { width: 100%; margin-top: 16px; border: 1px solid hsl(var(--hairline)); border-radius: 12px; border-collapse: separate; border-spacing: 0; overflow: hidden; font-size: 12px; text-align: left; }
+  .example th { padding: 10px 16px; border-bottom: 1px solid hsl(var(--hairline)); background: hsl(var(--surface-2) / 0.5); font-family: var(--font-mono); font-size: 9.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--ink-soft)); }
+  .example td { padding: 10px 16px; border-bottom: 1px solid hsl(var(--hairline)); }
+  .example tr:last-child td { border-bottom: 0; }
+  .example .r { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: hsl(var(--ink-soft)); }
+  .example tr.total td { background: hsl(var(--surface-2) / 0.4); color: hsl(var(--ink)); font-weight: 500; }
+  .bands { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 12px; }
+  .bands li { border: 1px solid hsl(var(--hairline)); border-radius: 12px; background: hsl(var(--card)); padding: 16px; }
+  .bands .row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .bands .name { font-family: var(--font-heading); font-size: 13.5px; font-weight: 500; }
+  .bands .range { font-family: var(--font-mono); font-size: 10.5px; color: hsl(var(--ink-soft)); }
+  .bands p { margin-top: 6px; font-size: 11.5px; line-height: 1.65; color: hsl(var(--ink-soft)); }
+  .limits { display: grid; gap: 32px; margin-top: 48px; padding-top: 32px; border-top: 1px solid hsl(var(--hairline)); }
+  @media (min-width: 768px) { .limits { grid-template-columns: repeat(3, 1fr); } }
+  .limits p { margin-top: 8px; font-size: 12.5px; line-height: 1.7; color: hsl(var(--ink-soft)); }
+  .note-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 40px; padding: 20px; border: 1px solid hsl(var(--hairline)); border-radius: 16px; background: hsl(var(--surface)); }
+  .note-strip p { max-width: 52ch; font-size: 12.5px; line-height: 1.7; color: hsl(var(--ink-soft)); }
+  .note-strip .btn { margin-left: auto; height: 40px; padding: 0 20px; font-size: 12.5px; }
+
+  /* ---- risk library ---- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 1px solid hsl(var(--hairline)); border-radius: 999px; background: transparent; color: hsl(var(--ink-soft)); font-family: var(--font-body); font-size: 12.5px; cursor: pointer; transition: color .2s ease, border-color .2s ease, background-color .2s ease; }
+  .chip span { font-family: var(--font-mono); font-size: 10px; opacity: .7; }
+  .chip:hover { color: hsl(var(--ink)); border-color: hsl(var(--ink) / 0.3); }
+  .chip.on { background: hsl(var(--ink)); border-color: hsl(var(--ink)); color: hsl(var(--bg)); }
+  .risk-list { display: grid; gap: 1px; margin-top: 20px; overflow: hidden; border: 1px solid hsl(var(--hairline)); border-radius: 16px; background: hsl(var(--hairline)); }
+  .risk-row { display: grid; gap: 4px 16px; padding: 16px 20px; background: hsl(var(--card)); transition: background-color .2s ease; }
+  @media (min-width: 768px) { .risk-row { grid-template-columns: 104px 190px 1fr auto; align-items: baseline; } }
+  .risk-row:hover { background: hsl(var(--surface-2) / 0.6); }
+  .risk-row .fam { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em; color: hsl(var(--ink-soft)); }
+  .risk-row .nm { font-family: var(--font-heading); font-size: 14px; font-weight: 500; letter-spacing: -0.02em; }
+  .risk-row .tg { font-size: 12.5px; color: hsl(var(--ink-soft)); }
+  .risk-row .go { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: hsl(var(--ink-soft)); white-space: nowrap; }
+  .risk-row:hover .go { color: hsl(var(--brand)); }
+  .risk-row[hidden] { display: none; }
+
   /* reveal */
   .reveal { opacity: 0; transform: translateY(16px); clip-path: inset(0 0 100% 0); transition: opacity .45s ease-out, transform .85s cubic-bezier(.22,1,.36,1), clip-path .95s cubic-bezier(.22,1,.36,1); will-change: clip-path, transform, opacity; }
   .reveal.in { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
@@ -372,10 +415,10 @@
     </a>
 
     <nav class="nav" aria-label="Primary">
-      <a href="/analyse">Analyse</a>
-      <a href="/investment">Investment intelligence</a>
-      <a href="/learn">Learn</a>
-      <a href="/methodology">Method</a>
+      <a href="#method">Method</a>
+      <a href="#investment">Investment intelligence</a>
+      <a href="#learn">Learn</a>
+      <a href="/analyse">Analyse ↗</a>
     </nav>
 
     <div class="hdr-actions">
@@ -395,10 +438,10 @@
 
   <div class="mobile-nav" id="mobileNav">
     <div class="wrap">
-      <a href="/analyse">Analyse</a>
-      <a href="/investment">Investment intelligence</a>
-      <a href="/learn">Learn</a>
-      <a href="/methodology">Method</a>
+      <a href="#method">Method</a>
+      <a href="#investment">Investment intelligence</a>
+      <a href="#learn">Learn</a>
+      <a href="/analyse">Analyse ↗</a>
       <a class="btn btn-ink" href="/analyse">Run an analysis ↗</a>
     </div>
   </div>
@@ -433,7 +476,7 @@
 
           <div class="hero-actions reveal" style="transition-delay:320ms">
             <a class="btn btn-ink" href="/analyse">Run an analysis →</a>
-            <a class="btn btn-line" href="/methodology">Read the method ↗</a>
+            <a class="btn btn-line" href="#method">Read the method ↗</a>
           </div>
 
           <div class="hero-facts reveal" style="transition-delay:400ms">
@@ -579,44 +622,96 @@
   </section>
 
   <!-- METHOD -->
-  <section class="band">
+  <section class="band" id="method">
     <div class="wrap pad">
-      <div class="split" style="align-items:start">
-        <div class="split-5 reveal">
-          <p class="eyebrow">Methodology</p>
-          <h2 style="max-width:18ch">The arithmetic is on the page, not in a black box.</h2>
-          <p class="lede" style="max-width:38ch">
-            Probabilities and impacts are model estimates, and we say so. What is not estimated is the way they
-            combine: five fixed rules, published in full, applied the same way to every plan.
+      <div class="reveal" style="max-width:46rem">
+        <p class="eyebrow">Methodology</p>
+        <h2 style="max-width:24ch">The arithmetic is on the page, not in a black box.</h2>
+        <p class="lede" style="max-width:62ch;font-size:14px">
+          Two things are estimates and one is arithmetic. The probabilities and impacts are judgements produced by a
+          model from your description; the way they combine is fixed, published and applied identically to every plan.
+          Separating those two is the point of this section.
+        </p>
+      </div>
+
+      <div class="formula reveal" style="margin-top:40px">
+        <div class="formula-head">
+          <span class="eyebrow">Calculation rules</span>
+          <span class="num" style="font-size:10px;color:hsl(var(--ink-soft))">v2026.1</span>
+        </div>
+        <dl style="margin:0">
+          <div class="formula-row three"><dt>Exposure</dt><dd>probability × impact ÷ 100</dd><dd class="note">A probability-weighted loss, in points of starting capital.</dd></div>
+          <div class="formula-row three"><dt>Overall score</dt><dd>Σ exposure, capped at 100</dd><dd class="note">The sum of every risk's exposure. A score of 45 means 45 points of capital weighted by likelihood.</dd></div>
+          <div class="formula-row three"><dt>Severity</dt><dd>≥10 high · ≥4 medium · below 4 low</dd><dd class="note">Applied per risk, on the exposure figure.</dd></div>
+          <div class="formula-row three"><dt>Capital at risk</dt><dd>capital × score range</dd><dd class="note">Low side from the weighted total; high side adds the combined impact of risks at or above 50% probability.</dd></div>
+          <div class="formula-row three"><dt>Stress test</dt><dd>probability × (1 + s)</dd><dd class="note">s runs from −50% to +50%. The saved analysis is never overwritten.</dd></div>
+        </dl>
+      </div>
+
+      <div class="split" style="margin-top:48px;align-items:start">
+        <div class="split-7 reveal">
+          <h3 class="section-title">Worked example</h3>
+          <p class="lede" style="max-width:60ch;font-size:13px">
+            Three risks, one plan, no stress applied. The exposures add to 13.5, which sits in the low band — even
+            though each individual risk is worth watching.
           </p>
-          <a class="textlink" href="/methodology">Read the full method →</a>
+          <table class="example">
+            <thead>
+              <tr><th>Risk</th><th class="r">Prob.</th><th class="r">Impact</th><th class="r">Exposure</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Large customer pays late</td><td class="r">30%</td><td class="r">15%</td><td class="r">4.5</td></tr>
+              <tr><td>Key supplier delivers late</td><td class="r">40%</td><td class="r">10%</td><td class="r">4.0</td></tr>
+              <tr><td>Market downturn</td><td class="r">20%</td><td class="r">25%</td><td class="r">5.0</td></tr>
+              <tr class="total"><td>Overall score</td><td></td><td></td><td class="r">13.5</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div class="split-7 reveal" style="transition-delay:120ms">
-          <div class="formula">
-            <div class="formula-head">
-              <span class="eyebrow">Scoring rules</span>
-              <span class="num" style="font-size:10px;color:hsl(var(--ink-soft))">v2026.1</span>
-            </div>
-            <dl style="margin:0">
-              <div class="formula-row"><dt>exposure</dt><dd>probability × impact ÷ 100</dd></div>
-              <div class="formula-row"><dt>score</dt><dd>Σ exposure, capped at 100</dd></div>
-              <div class="formula-row"><dt>capital at risk</dt><dd>capital × weighted exposure</dd></div>
-              <div class="formula-row"><dt>bands</dt><dd>&lt;20 low · &lt;45 moderate · &lt;70 elevated · ≥70 critical</dd></div>
-              <div class="formula-row"><dt>stress</dt><dd>every probability × (1 + s)</dd></div>
-            </dl>
-          </div>
+
+        <div class="split-5 reveal" style="transition-delay:120ms">
+          <h3 class="section-title" id="bands">Score bands</h3>
+          <ul class="bands">
+            <li><div class="row"><span class="name">Low</span><span class="range">under 20</span></div><p>Exposures are small or unlikely. Keep monitoring the top two rows.</p></li>
+            <li><div class="row"><span class="name">Moderate</span><span class="range">20 to 44</span></div><p>A normal operating profile. Fix the highest exposures before committing more capital.</p></li>
+            <li><div class="row"><span class="name">Elevated</span><span class="range">45 to 69</span></div><p>Several risks could land together. The plan needs a staged commitment or a hedge.</p></li>
+            <li><div class="row"><span class="name">Critical</span><span class="range">70 and above</span></div><p>The weighted exposure is large relative to the plan. Do not proceed without changing the structure.</p></li>
+          </ul>
         </div>
+      </div>
+
+      <div class="limits" id="limits">
+        <div>
+          <p class="eyebrow">What the model sees</p>
+          <p>Your description, plus capital, timeline, sector and market if you supply them. No live market data, no company filings, no prices.</p>
+        </div>
+        <div>
+          <p class="eyebrow">What it cannot do</p>
+          <p>It cannot see risks you did not describe, and it treats risks as independent when they often correlate. Totals are approximate, not actuarial.</p>
+        </div>
+        <div>
+          <p class="eyebrow">How to challenge it</p>
+          <p>Read the three largest exposures, ask whether each probability is plausible, change one assumption and rerun, then compare the two versions.</p>
+        </div>
+      </div>
+
+      <div class="note-strip reveal">
+        <p>Every analysis is a structured estimate, not a forecast and not advice. Validate the assumptions with someone qualified before committing capital.</p>
+        <a class="btn btn-ink" href="/analyse">Run an analysis →</a>
       </div>
     </div>
   </section>
 
   <!-- ASSETS -->
-  <section class="band">
+  <section class="band" id="investment">
     <div class="wrap pad">
       <div class="sec-head">
         <div class="reveal">
           <p class="eyebrow">Investment intelligence</p>
           <h2 style="max-width:22ch">Eight asset classes, one discipline.</h2>
+          <p class="lede" style="max-width:46ch">
+            Each class gets the same treatment: how the return is actually produced, what breaks it, and a working
+            calculator for the arithmetic that matters.
+          </p>
         </div>
         <div class="reveal" style="transition-delay:100ms">
           <a class="seclink" href="/investment">Open investment intelligence ↗</a>
@@ -637,37 +732,50 @@
   </section>
 
   <!-- LEARN -->
-  <section class="band alt">
+  <section class="band alt" id="learn">
     <div class="wrap pad">
       <div class="sec-head">
         <div class="reveal">
           <p class="eyebrow">Learning library</p>
-          <h2 style="max-width:20ch">The reference behind the scores.</h2>
+          <h2 style="max-width:24ch">Twenty risks, in the language of the people who carry them.</h2>
+          <p class="lede" style="max-width:46ch">
+            Every entry defines the risk, how it is measured, the warning signs to watch, and what actually reduces it.
+          </p>
         </div>
         <div class="reveal" style="transition-delay:100ms">
-          <a class="seclink" href="/learn">Browse all 20 risks →</a>
+          <a class="seclink" href="/learn">Open the library ↗</a>
         </div>
       </div>
 
-      <div class="cards">
-        <a class="rcard reveal" href="/learn/model">
-          <span class="pill">Operational</span>
-          <h3>Model risk</h3>
-          <p>A precise-looking number is not an accurate one. Where forecasts go wrong, and how to test them.</p>
-          <span class="read">Read →</span>
-        </a>
-        <a class="rcard reveal" href="/learn/liquidity" style="transition-delay:90ms">
-          <span class="pill">Financial</span>
-          <h3>Liquidity risk</h3>
-          <p>Profit is not cash. How runway disappears while the accounts still look healthy.</p>
-          <span class="read">Read →</span>
-        </a>
-        <a class="rcard reveal" href="/learn/concentration" style="transition-delay:180ms">
-          <span class="pill">Financial</span>
-          <h3>Concentration risk</h3>
-          <p>Many holdings is not the same as diversified — if they share the same hidden driver.</p>
-          <span class="read">Read →</span>
-        </a>
+      <div class="chips reveal" role="group" aria-label="Filter risks by family">
+        <button type="button" class="chip on" data-family="all">All <span>20</span></button>
+        <button type="button" class="chip" data-family="Financial">Financial <span>7</span></button>
+        <button type="button" class="chip" data-family="Operational">Operational <span>3</span></button>
+        <button type="button" class="chip" data-family="Market">Market <span>7</span></button>
+        <button type="button" class="chip" data-family="Regulatory">Regulatory <span>3</span></button>
+      </div>
+
+      <div class="risk-list reveal" id="riskList">
+        <a class="risk-row" data-family="Financial" href="/learn/credit"><span class="fam">Financial</span><span class="nm">Credit risk</span><span class="tg">Borrowers, customers or issuers failing to pay.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Financial" href="/learn/liquidity"><span class="fam">Financial</span><span class="nm">Liquidity risk</span><span class="tg">Not enough cash, or assets that cannot be sold fast enough.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Financial" href="/learn/interest-rate"><span class="fam">Financial</span><span class="nm">Interest rate risk</span><span class="tg">Rate changes that cut income or the value of assets and debts.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Financial" href="/learn/reinvestment"><span class="fam">Financial</span><span class="nm">Reinvestment risk</span><span class="tg">Having to reinvest cash flows at lower rates than expected.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Financial" href="/learn/counterparty"><span class="fam">Financial</span><span class="nm">Counterparty risk</span><span class="tg">The other side of a contract failing before it settles.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Financial" href="/learn/concentration"><span class="fam">Financial</span><span class="nm">Concentration risk</span><span class="tg">Too much exposure to one name, sector, region or supplier.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Financial" href="/learn/settlement"><span class="fam">Financial</span><span class="nm">Settlement risk</span><span class="tg">One side pays or delivers, the other does not.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Operational" href="/learn/operational"><span class="fam">Operational</span><span class="nm">Operational risk</span><span class="tg">Failures of people, processes, systems and external events.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Operational" href="/learn/model"><span class="fam">Operational</span><span class="nm">Model risk</span><span class="tg">Decisions distorted by flawed, misused or outdated models.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Operational" href="/learn/technology"><span class="fam">Operational</span><span class="nm">Technology risk</span><span class="tg">Attacks, outages and failures of systems and data.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Market" href="/learn/market"><span class="fam">Market</span><span class="nm">Market risk</span><span class="tg">Losses from adverse moves in prices, rates and demand.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Market" href="/learn/inflation"><span class="fam">Market</span><span class="nm">Inflation risk</span><span class="tg">Rising prices that erode purchasing power or margins.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Market" href="/learn/currency"><span class="fam">Market</span><span class="nm">Currency risk</span><span class="tg">Exchange-rate moves that change the value of cash flows.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Market" href="/learn/systemic"><span class="fam">Market</span><span class="nm">Systemic risk</span><span class="tg">Risk that can be diversified away versus risk that cannot.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Market" href="/learn/strategic"><span class="fam">Market</span><span class="nm">Strategic risk</span><span class="tg">A flawed, poorly executed or overtaken strategy.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Market" href="/learn/reputational"><span class="fam">Market</span><span class="nm">Reputational risk</span><span class="tg">Loss of trust that costs customers, revenue and partners.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Market" href="/learn/commodity"><span class="fam">Market</span><span class="nm">Commodity price risk</span><span class="tg">Raw-material price swings that lift costs or cut revenue.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Regulatory" href="/learn/political-regulatory"><span class="fam">Regulatory</span><span class="nm">Political and regulatory risk</span><span class="tg">Government action or rule changes that hurt returns.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Regulatory" href="/learn/sovereign"><span class="fam">Regulatory</span><span class="nm">Sovereign risk</span><span class="tg">A government failing to honour its debt or imposing controls.</span><span class="go">Read →</span></a>
+        <a class="risk-row" data-family="Regulatory" href="/learn/legal"><span class="fam">Regulatory</span><span class="nm">Legal risk</span><span class="tg">Lawsuits, contract disputes and non-compliance.</span><span class="go">Read →</span></a>
       </div>
     </div>
   </section>
@@ -706,17 +814,17 @@
         <ul>
           <li><a href="/analyse">Analyse a plan</a></li>
           <li><a href="/scenarios">Saved scenarios</a></li>
-          <li><a href="/investment">Investment intelligence</a></li>
-          <li><a href="/learn">Learning library</a></li>
+          <li><a href="#investment">Investment intelligence</a></li>
+          <li><a href="#learn">Learning library</a></li>
         </ul>
       </div>
 
       <div class="foot-col">
         <p class="eyebrow">Method</p>
         <ul>
-          <li><a href="/methodology">How scoring works</a></li>
-          <li><a href="/methodology#bands">Score bands</a></li>
-          <li><a href="/methodology#limits">Limits and data</a></li>
+          <li><a href="#method">How scoring works</a></li>
+          <li><a href="#bands">Score bands</a></li>
+          <li><a href="#limits">Limits and data</a></li>
         </ul>
       </div>
 
@@ -986,6 +1094,19 @@
 
   render(0);
   renderMatrix(document.getElementById("featureMatrix"), scored(0).risks);
+
+  /* ---------------- risk library filter ---------------- */
+  var chips = document.querySelectorAll(".chip");
+  var rows = document.querySelectorAll(".risk-row");
+  Array.prototype.forEach.call(chips, function (chip) {
+    chip.addEventListener("click", function () {
+      Array.prototype.forEach.call(chips, function (other) { other.classList.toggle("on", other === chip); });
+      var family = chip.getAttribute("data-family");
+      Array.prototype.forEach.call(rows, function (row) {
+        row.hidden = family !== "all" && row.getAttribute("data-family") !== family;
+      });
+    });
+  });
 
   /* ---------------- feature preview stress ---------------- */
   var pv = document.getElementById("pvStress");
