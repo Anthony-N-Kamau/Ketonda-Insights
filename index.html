@@ -384,6 +384,41 @@
   .risk-row:hover .go { color: hsl(var(--brand)); }
   .risk-row[hidden] { display: none; }
 
+  /* ---- investment detail ---- */
+  .asset.on { background: hsl(var(--surface-2) / 0.85); }
+  .asset.on .open { color: hsl(var(--brand)); }
+  .asset-panels { margin-top: 32px; }
+  .asset-panel { display: none; }
+  .asset-panel.on { display: block; animation: fadeup .4s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes fadeup { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .asset-detail { display: grid; gap: 32px; }
+  @media (min-width: 1024px) { .asset-detail { grid-template-columns: 7fr 5fr; gap: 40px; align-items: start; } }
+  .asset-detail h3 { margin: 10px 0 0; font-size: clamp(1.6rem, 2.6vw, 2rem); font-weight: 600; letter-spacing: -0.03em; }
+  .asset-def { margin: 12px 0 0; max-width: 58ch; font-size: 14px; line-height: 1.7; color: hsl(var(--ink-soft)); }
+  .asset-cols { display: grid; gap: 28px; margin-top: 28px; }
+  @media (min-width: 640px) { .asset-cols { grid-template-columns: 1fr 1fr; } }
+  .bullets { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+  .bullets li { position: relative; padding-left: 14px; font-size: 12.5px; line-height: 1.65; color: hsl(var(--ink-soft)); }
+  .bullets li::before { content: ""; position: absolute; left: 0; top: 7px; width: 4px; height: 4px; border-radius: 50%; background: hsl(var(--brand)); }
+  .bullets.watch li::before { background: hsl(var(--risk-med)); }
+  .risk-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .risk-tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid hsl(var(--hairline)); border-radius: 999px; font-size: 11.5px; color: hsl(var(--ink-soft)); transition: color .2s ease, border-color .2s ease; }
+  .risk-tag:hover { border-color: hsl(var(--ink) / 0.3); color: hsl(var(--ink)); }
+  .calc { border: 1px solid hsl(var(--hairline)); border-radius: 16px; background: hsl(var(--card)); padding: 20px; }
+  .calc h4 { margin: 8px 0 0; font-size: 15px; font-weight: 500; letter-spacing: -0.02em; }
+  .calc-note { margin-top: 6px; font-size: 11.5px; line-height: 1.6; color: hsl(var(--ink-soft)); }
+  .calc-fields { display: grid; gap: 12px; margin-top: 18px; }
+  @media (min-width: 480px) { .calc-fields { grid-template-columns: 1fr 1fr; } }
+  .cf { display: grid; gap: 4px; }
+  .cf span { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--ink-soft)); }
+  .cf input, .cf select { width: 100%; padding: 8px 10px; border: 1px solid hsl(var(--hairline)); border-radius: 10px; background: hsl(var(--bg)); color: hsl(var(--ink)); font-family: var(--font-mono); font-size: 12.5px; outline: none; }
+  .cf input:focus, .cf select:focus { border-color: hsl(var(--brand)); }
+  .calc-out { margin-top: 18px; padding-top: 16px; border-top: 1px solid hsl(var(--hairline)); }
+  .calc-value { margin-top: 4px; font-family: var(--font-mono); font-size: 24px; font-weight: 500; line-height: 1.1; }
+  .calc-rows { display: grid; gap: 8px; margin: 16px 0 0; padding: 0; }
+  .calc-rows div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 12px; color: hsl(var(--ink-soft)); }
+  .calc-rows b { font-family: var(--font-mono); font-weight: 500; color: hsl(var(--ink)); }
+
   /* reveal */
   .reveal { opacity: 0; transform: translateY(16px); clip-path: inset(0 0 100% 0); transition: opacity .45s ease-out, transform .85s cubic-bezier(.22,1,.36,1), clip-path .95s cubic-bezier(.22,1,.36,1); will-change: clip-path, transform, opacity; }
   .reveal.in { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
@@ -719,14 +754,306 @@
       </div>
 
       <div class="asset-grid">
-        <a class="asset reveal" href="/investment/equity"><div><p class="name">Equity</p><p class="note">Ownership, valuation, DCF</p></div><span class="open">Open →</span></a>
-        <a class="asset reveal" href="/investment/debt"><div><p class="name">Debt</p><p class="note">Yield, duration, rate risk</p></div><span class="open">Open →</span></a>
-        <a class="asset reveal" href="/investment/hybrid"><div><p class="name">Hybrid</p><p class="note">Convertibles, premiums</p></div><span class="open">Open →</span></a>
-        <a class="asset reveal" href="/investment/derivatives"><div><p class="name">Derivatives</p><p class="note">Payoffs, break-evens</p></div><span class="open">Open →</span></a>
-        <a class="asset reveal" href="/investment/funds"><div><p class="name">Pooled funds</p><p class="note">Fees, compounding</p></div><span class="open">Open →</span></a>
-        <a class="asset reveal" href="/investment/asset-backed"><div><p class="name">Asset-backed</p><p class="note">Tranches, prepayment</p></div><span class="open">Open →</span></a>
-        <a class="asset reveal" href="/investment/cash"><div><p class="name">Cash &amp; money market</p><p class="note">Bill yields, real return</p></div><span class="open">Open →</span></a>
-        <a class="asset reveal" href="/investment/alternatives"><div><p class="name">Alternatives</p><p class="note">Property, commodities</p></div><span class="open">Open →</span></a>
+        <a class="asset reveal" href="#asset-equity" data-asset="equity"><div><p class="name">Equity</p><p class="note">Ownership, valuation, DCF</p></div><span class="open">Open →</span></a>
+        <a class="asset reveal" href="#asset-debt" data-asset="debt"><div><p class="name">Debt</p><p class="note">Yield, duration, rate risk</p></div><span class="open">Open →</span></a>
+        <a class="asset reveal" href="#asset-hybrid" data-asset="hybrid"><div><p class="name">Hybrid</p><p class="note">Convertibles, premiums</p></div><span class="open">Open →</span></a>
+        <a class="asset reveal" href="#asset-derivatives" data-asset="derivatives"><div><p class="name">Derivatives</p><p class="note">Payoffs, break-evens</p></div><span class="open">Open →</span></a>
+        <a class="asset reveal" href="#asset-funds" data-asset="funds"><div><p class="name">Pooled funds</p><p class="note">Fees, compounding</p></div><span class="open">Open →</span></a>
+        <a class="asset reveal" href="#asset-asset-backed" data-asset="asset-backed"><div><p class="name">Asset-backed</p><p class="note">Tranches, prepayment</p></div><span class="open">Open →</span></a>
+        <a class="asset reveal" href="#asset-cash" data-asset="cash"><div><p class="name">Cash &amp; money market</p><p class="note">Bill yields, real return</p></div><span class="open">Open →</span></a>
+        <a class="asset reveal" href="#asset-alternatives" data-asset="alternatives"><div><p class="name">Alternatives</p><p class="note">Property, commodities</p></div><span class="open">Open →</span></a>
+      </div>
+
+      <div class="asset-panels" id="asset-panels">
+
+        <article class="asset-panel" data-slug="equity" id="asset-equity">
+          <div class="asset-detail">
+            <div>
+              <p class="eyebrow">Ownership</p>
+              <h3>Equity</h3>
+              <p class="asset-def">Equity is a residual claim on a company: shareholders are paid after everyone else, which is why the upside is uncapped and the downside reaches zero. Valuation is a forecast dressed as arithmetic, so the assumptions matter more than the decimal places.</p>
+              <div class="asset-cols">
+                <div>
+                  <p class="eyebrow">What moves it</p>
+                  <ul class="bullets">
+                    <li>Cash flow growth and the reinvestment needed to fund it</li>
+                    <li>The discount rate, which carries both the risk-free rate and a risk premium</li>
+                    <li>The terminal value, which usually carries most of the answer</li>
+                    <li>How much of the value is already in the price</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="eyebrow">What to watch</p>
+                  <ul class="bullets watch">
+                    <li>Revenue growth outrunning cash conversion for several periods</li>
+                    <li>Rising share count from dilution</li>
+                    <li>A terminal growth rate above nominal GDP</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="eyebrow" style="margin-top:28px">Related risks</p>
+              <div class="risk-tags">
+                <a class="risk-tag" href="/learn/model">Model risk ↗</a>
+                <a class="risk-tag" href="/learn/market">Market risk ↗</a>
+                <a class="risk-tag" href="/learn/strategic">Strategic risk ↗</a>
+              </div>
+            </div>
+            <div class="calc" data-calc="equity"></div>
+          </div>
+        </article>
+
+        <article class="asset-panel" data-slug="debt" id="asset-debt">
+          <div class="asset-detail">
+            <div>
+              <p class="eyebrow">Fixed income</p>
+              <h3>Debt</h3>
+              <p class="asset-def">Debt is a contractual claim: fixed payments, a maturity date, and priority over equity. The quoted yield is only realised if every payment is made and reinvested at that same rate, which is why yield and duration are read together.</p>
+              <div class="asset-cols">
+                <div>
+                  <p class="eyebrow">What moves it</p>
+                  <ul class="bullets">
+                    <li>The level and shape of the yield curve</li>
+                    <li>Credit spread for the issuer's risk</li>
+                    <li>Reinvestment rates on coupons</li>
+                    <li>Call and prepayment features</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="eyebrow">What to watch</p>
+                  <ul class="bullets watch">
+                    <li>Price well above par with a low coupon — the yield is doing more work than it looks</li>
+                    <li>Long duration in a rising-rate environment</li>
+                    <li>Covenants that weaken the claim without changing the yield</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="eyebrow" style="margin-top:28px">Related risks</p>
+              <div class="risk-tags">
+                <a class="risk-tag" href="/learn/interest-rate">Interest rate risk ↗</a>
+                <a class="risk-tag" href="/learn/credit">Credit risk ↗</a>
+                <a class="risk-tag" href="/learn/reinvestment">Reinvestment risk ↗</a>
+              </div>
+            </div>
+            <div class="calc" data-calc="debt"></div>
+          </div>
+        </article>
+
+        <article class="asset-panel" data-slug="hybrid" id="asset-hybrid">
+          <div class="asset-detail">
+            <div>
+              <p class="eyebrow">Debt and equity</p>
+              <h3>Hybrid</h3>
+              <p class="asset-def">A hybrid pays a coupon like debt but carries an option to convert into equity. The investor is buying a bond floor plus a call option, and the premium over conversion value is what that option costs.</p>
+              <div class="asset-cols">
+                <div>
+                  <p class="eyebrow">What moves it</p>
+                  <ul class="bullets">
+                    <li>Share price relative to the conversion ratio</li>
+                    <li>Implied volatility of the underlying equity</li>
+                    <li>Credit quality of the issuer, which sets the bond floor</li>
+                    <li>Call and reset terms</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="eyebrow">What to watch</p>
+                  <ul class="bullets watch">
+                    <li>Conversion premium that only makes sense with high volatility</li>
+                    <li>Issuer credit deteriorating while the equity looks attractive</li>
+                    <li>Forced conversion triggers</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="eyebrow" style="margin-top:28px">Related risks</p>
+              <div class="risk-tags">
+                <a class="risk-tag" href="/learn/interest-rate">Interest rate risk ↗</a>
+                <a class="risk-tag" href="/learn/market">Market risk ↗</a>
+                <a class="risk-tag" href="/learn/credit">Credit risk ↗</a>
+              </div>
+            </div>
+            <div class="calc" data-calc="hybrid"></div>
+          </div>
+        </article>
+
+        <article class="asset-panel" data-slug="derivatives" id="asset-derivatives">
+          <div class="asset-detail">
+            <div>
+              <p class="eyebrow">Contracts</p>
+              <h3>Derivatives</h3>
+              <p class="asset-def">A derivative is a contract whose value comes from something else. Options give a right without an obligation, which caps the loss at the premium and makes the break-even the only number that matters.</p>
+              <div class="asset-cols">
+                <div>
+                  <p class="eyebrow">What moves it</p>
+                  <ul class="bullets">
+                    <li>Distance between strike and spot</li>
+                    <li>Implied volatility and time to expiry</li>
+                    <li>Cost of carry and dividends</li>
+                    <li>Position size relative to the capital behind it</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="eyebrow">What to watch</p>
+                  <ul class="bullets watch">
+                    <li>Premium that requires an implausible move to break even</li>
+                    <li>Short options with uncapped downside</li>
+                    <li>Margin calls arriving before the thesis plays out</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="eyebrow" style="margin-top:28px">Related risks</p>
+              <div class="risk-tags">
+                <a class="risk-tag" href="/learn/market">Market risk ↗</a>
+                <a class="risk-tag" href="/learn/counterparty">Counterparty risk ↗</a>
+                <a class="risk-tag" href="/learn/liquidity">Liquidity risk ↗</a>
+              </div>
+            </div>
+            <div class="calc" data-calc="derivatives"></div>
+          </div>
+        </article>
+
+        <article class="asset-panel" data-slug="funds" id="asset-funds">
+          <div class="asset-detail">
+            <div>
+              <p class="eyebrow">Collectives</p>
+              <h3>Pooled funds</h3>
+              <p class="asset-def">A pooled fund spreads ownership across many holdings and charges for the management. The fee looks small in one year and is decisive over twenty, because it is charged on the whole balance every year.</p>
+              <div class="asset-cols">
+                <div>
+                  <p class="eyebrow">What moves it</p>
+                  <ul class="bullets">
+                    <li>Expense ratio and any performance fee</li>
+                    <li>Gross return of the underlying holdings</li>
+                    <li>Time horizon, which turns a small drag into a large one</li>
+                    <li>Tax and platform charges outside the fund</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="eyebrow">What to watch</p>
+                  <ul class="bullets watch">
+                    <li>Performance fees with no high-water mark</li>
+                    <li>A fund that quietly changed its mandate</li>
+                    <li>Fee layers: platform, fund, and trading costs</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="eyebrow" style="margin-top:28px">Related risks</p>
+              <div class="risk-tags">
+                <a class="risk-tag" href="/learn/model">Model risk ↗</a>
+                <a class="risk-tag" href="/learn/market">Market risk ↗</a>
+                <a class="risk-tag" href="/learn/concentration">Concentration risk ↗</a>
+              </div>
+            </div>
+            <div class="calc" data-calc="funds"></div>
+          </div>
+        </article>
+
+        <article class="asset-panel" data-slug="asset-backed" id="asset-asset-backed">
+          <div class="asset-detail">
+            <div>
+              <p class="eyebrow">Structured</p>
+              <h3>Asset-backed</h3>
+              <p class="asset-def">Asset-backed securities pass through the cash flows of a loan pool, split into tranches. Senior tranches are paid first and absorb losses last; the equity tranche takes the first loss, which is where the risk actually sits.</p>
+              <div class="asset-cols">
+                <div>
+                  <p class="eyebrow">What moves it</p>
+                  <ul class="bullets">
+                    <li>Default and recovery rates in the underlying pool</li>
+                    <li>Prepayment speed, which changes the tranche's life</li>
+                    <li>Attachment and detachment points of each tranche</li>
+                    <li>Quality of the servicing and the collateral</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="eyebrow">What to watch</p>
+                  <ul class="bullets watch">
+                    <li>Prepayment assumptions that shorten the expected life</li>
+                    <li>Recoveries that rely on a rising collateral market</li>
+                    <li>Correlation between borrowers in the pool</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="eyebrow" style="margin-top:28px">Related risks</p>
+              <div class="risk-tags">
+                <a class="risk-tag" href="/learn/credit">Credit risk ↗</a>
+                <a class="risk-tag" href="/learn/concentration">Concentration risk ↗</a>
+                <a class="risk-tag" href="/learn/liquidity">Liquidity risk ↗</a>
+              </div>
+            </div>
+            <div class="calc" data-calc="asset-backed"></div>
+          </div>
+        </article>
+
+        <article class="asset-panel" data-slug="cash" id="asset-cash">
+          <div class="asset-detail">
+            <div>
+              <p class="eyebrow">Liquidity</p>
+              <h3>Cash &amp; money market</h3>
+              <p class="asset-def">Cash and money market instruments are the closest thing to liquidity, which is exactly why their return is measured against inflation. Bills are sold at a discount and repay at face, so the same holding has two different quoted yields.</p>
+              <div class="asset-cols">
+                <div>
+                  <p class="eyebrow">What moves it</p>
+                  <ul class="bullets">
+                    <li>Policy rates and the shape of the short curve</li>
+                    <li>Inflation, which sets the real return</li>
+                    <li>Credit quality of the issuer or deposit taker</li>
+                    <li>Access and notice terms on the account</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="eyebrow">What to watch</p>
+                  <ul class="bullets watch">
+                    <li>A discount yield quoted as if it were an annual return</li>
+                    <li>Deposit guarantees that cap the protected amount</li>
+                    <li>Real returns quietly negative for several years</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="eyebrow" style="margin-top:28px">Related risks</p>
+              <div class="risk-tags">
+                <a class="risk-tag" href="/learn/inflation">Inflation risk ↗</a>
+                <a class="risk-tag" href="/learn/liquidity">Liquidity risk ↗</a>
+                <a class="risk-tag" href="/learn/interest-rate">Interest rate risk ↗</a>
+              </div>
+            </div>
+            <div class="calc" data-calc="cash"></div>
+          </div>
+        </article>
+
+        <article class="asset-panel" data-slug="alternatives" id="asset-alternatives">
+          <div class="asset-detail">
+            <div>
+              <p class="eyebrow">Real assets</p>
+              <h3>Alternatives</h3>
+              <p class="asset-def">Alternatives are assets outside listed equity and debt: property, private markets, commodities and real assets. They are valued less often, trade slowly, and are usually judged on income yield plus capital growth.</p>
+              <div class="asset-cols">
+                <div>
+                  <p class="eyebrow">What moves it</p>
+                  <ul class="bullets">
+                    <li>Net operating income and the cap rate applied to it</li>
+                    <li>Vacancy, tenant quality and lease length</li>
+                    <li>Financing cost and refinancing risk</li>
+                    <li>Liquidity: how long it takes to sell, and at what discount</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="eyebrow">What to watch</p>
+                  <ul class="bullets watch">
+                    <li>A cap rate that reflects the market, not the purchase price</li>
+                    <li>Capital expenditure deferred to protect headline income</li>
+                    <li>Valuations based on the last transaction rather than the current market</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="eyebrow" style="margin-top:28px">Related risks</p>
+              <div class="risk-tags">
+                <a class="risk-tag" href="/learn/liquidity">Liquidity risk ↗</a>
+                <a class="risk-tag" href="/learn/interest-rate">Interest rate risk ↗</a>
+                <a class="risk-tag" href="/learn/concentration">Concentration risk ↗</a>
+              </div>
+            </div>
+            <div class="calc" data-calc="alternatives"></div>
+          </div>
+        </article>
+
       </div>
     </div>
   </section>
@@ -1094,6 +1421,334 @@
 
   render(0);
   renderMatrix(document.getElementById("featureMatrix"), scored(0).risks);
+
+  /* ---------------- investment calculators ---------------- */
+  function moneyLong(value) {
+    if (!isFinite(value)) return "—";
+    var sign = value < 0 ? "-" : "";
+    var a = Math.abs(value);
+    if (a >= 1e9) return sign + "$" + (a / 1e9).toFixed(2) + "b";
+    if (a >= 1e6) return sign + "$" + (a / 1e6).toFixed(2) + "m";
+    if (a >= 1000) return sign + "$" + Math.round(a).toLocaleString("en-US");
+    return sign + "$" + (Math.round(a * 100) / 100).toFixed(2);
+  }
+
+  function bisectYield(price, face, couponRate, years) {
+    var coupon = (face * couponRate) / 100;
+    function pv(rate) {
+      var total = 0;
+      for (var t = 1; t <= years; t += 1) total += coupon / Math.pow(1 + rate, t);
+      return total + face / Math.pow(1 + rate, years);
+    }
+    var low = -0.9, high = 1.5;
+    for (var i = 0; i < 80; i += 1) {
+      var mid = (low + high) / 2;
+      if (pv(mid) > price) low = mid; else high = mid;
+    }
+    return (low + high) / 2;
+  }
+
+  var CALCS = {
+    equity: {
+      title: "Terminal value and value per share",
+      note: "A Gordon growth model: value = FCF × (1 + g) ÷ (r − g). Crude, transparent, and it shows how much rides on two numbers.",
+      fields: [
+        { key: "fcf", label: "Free cash flow", value: 1200000, min: 0, max: 100000000, step: 50000 },
+        { key: "growth", label: "Growth rate %", value: 6, min: 0, max: 20, step: 0.5 },
+        { key: "discount", label: "Discount rate %", value: 10, min: 1, max: 30, step: 0.5 },
+        { key: "shares", label: "Shares outstanding", value: 2000000, min: 1000, max: 1000000000, step: 10000 }
+      ],
+      compute: function (v) {
+        var g = v.growth / 100, r = v.discount / 100;
+        if (r <= g) {
+          return { headline: { label: "Value per share", value: "—", note: "The discount rate must exceed growth, or the model is undefined." }, rows: [] };
+        }
+        var value = (v.fcf * (1 + g)) / (r - g);
+        var perShare = v.shares > 0 ? value / v.shares : 0;
+        var stressed = (v.fcf * (1 + g)) / (r + 0.01 - g);
+        var slower = g - 0.01 > -1 ? (v.fcf * (1 + g - 0.01)) / (r - (g - 0.01)) : value;
+        return {
+          headline: { label: "Value per share", value: moneyLong(perShare), note: "Enterprise value " + moneyLong(value) + " on " + moneyLong(v.fcf) + " of free cash flow." },
+          rows: [
+            { label: "Implied FCF multiple", value: (value / Math.max(1, v.fcf)).toFixed(1) + "×" },
+            { label: "Per share at +1pt discount", value: moneyLong(v.shares > 0 ? stressed / v.shares : 0) },
+            { label: "Per share at −1pt growth", value: moneyLong(v.shares > 0 ? slower / v.shares : 0) }
+          ]
+        };
+      }
+    },
+    debt: {
+      title: "Yield and duration",
+      note: "Yield to maturity is solved by bisection on the bond's cash flows; modified duration approximates the price move for a 1 point yield change.",
+      fields: [
+        { key: "face", label: "Face value", value: 1000, min: 100, max: 1000000, step: 100 },
+        { key: "coupon", label: "Coupon %", value: 5, min: 0, max: 20, step: 0.25 },
+        { key: "price", label: "Price paid", value: 950, min: 100, max: 1000000, step: 10 },
+        { key: "years", label: "Years to maturity", value: 8, min: 1, max: 40, step: 1 }
+      ],
+      compute: function (v) {
+        var couponAmount = (v.face * v.coupon) / 100;
+        var ytm = bisectYield(v.price, v.face, v.coupon, v.years);
+        var weighted = 0;
+        for (var t = 1; t <= v.years; t += 1) weighted += (t * couponAmount) / Math.pow(1 + ytm, t);
+        weighted += (v.years * v.face) / Math.pow(1 + ytm, v.years);
+        var macaulay = weighted / v.price;
+        var modified = macaulay / (1 + ytm);
+        return {
+          headline: {
+            label: "Yield to maturity",
+            value: (ytm * 100).toFixed(2) + "%",
+            note: v.price > v.face ? "Bought at a premium, so part of the return is a slow capital loss." : v.price < v.face ? "Bought at a discount, so part of the return is capital gain to maturity." : "Bought at par."
+          },
+          rows: [
+            { label: "Current yield", value: ((couponAmount / v.price) * 100).toFixed(2) + "%" },
+            { label: "Modified duration", value: modified.toFixed(2) + " yrs" },
+            { label: "Price change for +1pt", value: (-modified).toFixed(2) + "%" }
+          ]
+        };
+      }
+    },
+    hybrid: {
+      title: "Conversion value and premium",
+      note: "Conversion value = ratio × share price. The premium is what you pay above the shares you would receive.",
+      fields: [
+        { key: "bondPrice", label: "Bond price", value: 1020, min: 100, max: 10000, step: 10 },
+        { key: "ratio", label: "Conversion ratio", value: 25, min: 0.1, max: 1000, step: 0.5 },
+        { key: "sharePrice", label: "Share price", value: 32, min: 0.1, max: 10000, step: 0.5 },
+        { key: "face", label: "Redemption value", value: 1000, min: 100, max: 10000, step: 10 }
+      ],
+      compute: function (v) {
+        var conversionValue = v.ratio * v.sharePrice;
+        var premium = conversionValue > 0 ? ((v.bondPrice - conversionValue) / conversionValue) * 100 : 0;
+        return {
+          headline: { label: "Conversion premium", value: premium.toFixed(1) + "%", note: "You are paying " + moneyLong(Math.max(0, v.bondPrice - conversionValue)) + " above the shares the bond converts into." },
+          rows: [
+            { label: "Conversion value", value: moneyLong(conversionValue) },
+            { label: "Break-even share price", value: moneyLong(v.ratio > 0 ? v.bondPrice / v.ratio : 0) },
+            { label: "Premium over redemption", value: (((v.bondPrice - v.face) / v.face) * 100).toFixed(1) + "%" }
+          ]
+        };
+      }
+    },
+    derivatives: {
+      title: "Option payoff at expiry",
+      note: "Payoff is calculated as if the contract expires at today's price, before transaction costs.",
+      fields: [
+        { key: "spot", label: "Underlying price", value: 100, min: 0.1, max: 100000, step: 1 },
+        { key: "strike", label: "Strike", value: 105, min: 0.1, max: 100000, step: 1 },
+        { key: "premium", label: "Premium paid", value: 3.2, min: 0, max: 10000, step: 0.1 },
+        { key: "contracts", label: "Contracts", value: 10, min: 1, max: 10000, step: 1 },
+        { key: "type", label: "Type", value: "call", options: [{ label: "Call", value: "call" }, { label: "Put", value: "put" }] }
+      ],
+      compute: function (v) {
+        var payoff = v.type === "put" ? Math.max(0, v.strike - v.spot) : Math.max(0, v.spot - v.strike);
+        var profit = payoff - v.premium;
+        var multiplier = 100;
+        return {
+          headline: { label: "Profit per contract", value: moneyLong(profit), note: "Total position result at expiry " + moneyLong(profit * v.contracts * multiplier) + " across " + v.contracts + " contracts." },
+          rows: [
+            { label: "Intrinsic value", value: moneyLong(payoff) },
+            { label: "Break-even underlying", value: moneyLong(v.type === "put" ? v.strike - v.premium : v.strike + v.premium) },
+            { label: "Maximum loss", value: moneyLong(v.premium * v.contracts * multiplier) }
+          ]
+        };
+      }
+    },
+    funds: {
+      title: "The cost of fees over time",
+      note: "Compares the same gross return with and without the annual charge, compounded over the holding period.",
+      fields: [
+        { key: "investment", label: "Amount invested", value: 25000, min: 0, max: 100000000, step: 1000 },
+        { key: "gross", label: "Gross return %", value: 7, min: -10, max: 30, step: 0.25 },
+        { key: "fee", label: "Annual charge %", value: 0.75, min: 0, max: 5, step: 0.05 },
+        { key: "years", label: "Years held", value: 10, min: 1, max: 50, step: 1 }
+      ],
+      compute: function (v) {
+        var net = v.investment * Math.pow(1 + (v.gross - v.fee) / 100, v.years);
+        var grossValue = v.investment * Math.pow(1 + v.gross / 100, v.years);
+        return {
+          headline: { label: "Value after charges", value: moneyLong(net), note: "The same money without the charge would be " + moneyLong(grossValue) + "." },
+          rows: [
+            { label: "Total cost of fees", value: moneyLong(grossValue - net) },
+            { label: "Effective annual return", value: (v.gross - v.fee).toFixed(2) + "%" },
+            { label: "Share of growth lost", value: (grossValue > v.investment ? (((grossValue - net) / (grossValue - v.investment)) * 100).toFixed(1) : "0.0") + "%" }
+          ]
+        };
+      }
+    },
+    "asset-backed": {
+      title: "Loss to a tranche",
+      note: "Expected pool loss is applied above the attachment point; the tranche absorbs the remainder up to its size.",
+      fields: [
+        { key: "pool", label: "Pool balance", value: 10000000, min: 1000, max: 1000000000, step: 100000 },
+        { key: "defaultRate", label: "Default rate %", value: 4, min: 0, max: 40, step: 0.25 },
+        { key: "recovery", label: "Recovery rate %", value: 40, min: 0, max: 100, step: 1 },
+        { key: "tranche", label: "Tranche size", value: 1000000, min: 1000, max: 1000000000, step: 100000 },
+        { key: "attachment", label: "Attachment point %", value: 5, min: 0, max: 60, step: 0.5 }
+      ],
+      compute: function (v) {
+        var poolLoss = (v.pool * v.defaultRate) / 100 * (1 - v.recovery / 100);
+        var attachmentAmount = (v.pool * v.attachment) / 100;
+        var lossToTranche = Math.min(Math.max(0, poolLoss - attachmentAmount), v.tranche);
+        return {
+          headline: { label: "Loss to the tranche", value: moneyLong(lossToTranche), note: ((lossToTranche / Math.max(1, v.tranche)) * 100).toFixed(1) + "% of the tranche is wiped out in this scenario." },
+          rows: [
+            { label: "Expected pool loss", value: moneyLong(poolLoss) },
+            { label: "Attachment amount", value: moneyLong(attachmentAmount) },
+            { label: "Loss as % of pool", value: ((poolLoss / Math.max(1, v.pool)) * 100).toFixed(2) + "%" }
+          ]
+        };
+      }
+    },
+    cash: {
+      title: "Bill yields",
+      note: "The discount yield uses face value and a 360-day year; the investment yield uses price and 365 days. They are not the same number.",
+      fields: [
+        { key: "face", label: "Face value", value: 100000, min: 100, max: 100000000, step: 1000 },
+        { key: "price", label: "Price paid", value: 98500, min: 100, max: 100000000, step: 100 },
+        { key: "days", label: "Days to maturity", value: 182, min: 1, max: 365, step: 1 }
+      ],
+      compute: function (v) {
+        var discount = (v.face - v.price) / v.face * (360 / v.days) * 100;
+        var investment = (v.face - v.price) / v.price * (365 / v.days) * 100;
+        var effective = (Math.pow(v.face / v.price, 365 / v.days) - 1) * 100;
+        return {
+          headline: { label: "Effective annual yield", value: effective.toFixed(2) + "%", note: "Buying at " + moneyLong(v.price) + " and receiving " + moneyLong(v.face) + " after " + v.days + " days." },
+          rows: [
+            { label: "Bank discount yield", value: discount.toFixed(2) + "%" },
+            { label: "Investment yield", value: investment.toFixed(2) + "%" },
+            { label: "Gain at maturity", value: moneyLong(v.face - v.price) }
+          ]
+        };
+      }
+    },
+    alternatives: {
+      title: "Income yield and total return",
+      note: "Net operating income is rent less operating costs. Total return adds capital growth over the holding period.",
+      fields: [
+        { key: "price", label: "Purchase price", value: 500000, min: 1000, max: 1000000000, step: 10000 },
+        { key: "rent", label: "Annual rent", value: 36000, min: 0, max: 100000000, step: 1000 },
+        { key: "opex", label: "Operating costs % of rent", value: 25, min: 0, max: 80, step: 1 },
+        { key: "growth", label: "Annual value growth %", value: 3, min: -10, max: 20, step: 0.25 },
+        { key: "years", label: "Holding period", value: 10, min: 1, max: 40, step: 1 }
+      ],
+      compute: function (v) {
+        var noi = v.rent * (1 - v.opex / 100);
+        var endValue = v.price * Math.pow(1 + v.growth / 100, v.years);
+        var income = noi * v.years;
+        var totalReturn = v.price > 0 ? ((endValue + income - v.price) / v.price) * 100 : 0;
+        var annualised = v.price > 0 ? (Math.pow((endValue + income) / v.price, 1 / v.years) - 1) * 100 : 0;
+        return {
+          headline: { label: "Cap rate", value: (v.price > 0 ? (noi / v.price) * 100 : 0).toFixed(2) + "%", note: "Net operating income of " + moneyLong(noi) + " against a " + moneyLong(v.price) + " purchase price." },
+          rows: [
+            { label: "Total return", value: totalReturn.toFixed(1) + "%" },
+            { label: "Annualised return", value: annualised.toFixed(2) + "%" },
+            { label: "Value at exit", value: moneyLong(endValue) }
+          ]
+        };
+      }
+    }
+  };
+
+  function buildCalc(slug) {
+    var host = document.querySelector('[data-calc="' + slug + '"]');
+    var config = CALCS[slug];
+    if (!host || !config || host.getAttribute("data-ready")) return;
+    host.setAttribute("data-ready", "1");
+
+    var head = document.createElement("div");
+    head.innerHTML = '<p class="eyebrow">Calculator</p><h4>' + config.title + "</h4><p class=\"calc-note\">" + config.note + "</p>";
+    host.appendChild(head);
+
+    var fields = document.createElement("div");
+    fields.className = "calc-fields";
+    config.fields.forEach(function (field) {
+      var wrap = document.createElement("label");
+      wrap.className = "cf";
+      var label = document.createElement("span");
+      label.textContent = field.label;
+      wrap.appendChild(label);
+      var input;
+      if (field.options) {
+        input = document.createElement("select");
+        field.options.forEach(function (option) {
+          var el = document.createElement("option");
+          el.value = option.value;
+          el.textContent = option.label;
+          input.appendChild(el);
+        });
+      } else {
+        input = document.createElement("input");
+        input.type = "number";
+        input.min = field.min;
+        input.max = field.max;
+        input.step = field.step;
+        input.value = field.value;
+      }
+      input.setAttribute("data-key", field.key);
+      wrap.appendChild(input);
+      fields.appendChild(wrap);
+    });
+    host.appendChild(fields);
+
+    var out = document.createElement("div");
+    out.className = "calc-out";
+    out.innerHTML = '<p class="eyebrow" data-label></p><p class="calc-value" data-value>—</p><p class="calc-note" data-note></p><dl class="calc-rows" data-rows></dl>';
+    host.appendChild(out);
+
+    function update() {
+      var values = {};
+      config.fields.forEach(function (field) {
+        var el = fields.querySelector('[data-key="' + field.key + '"]');
+        values[field.key] = field.options ? el.value : Number(el.value);
+      });
+      var result = config.compute(values);
+      out.querySelector("[data-label]").textContent = result.headline.label;
+      out.querySelector("[data-value]").textContent = result.headline.value;
+      out.querySelector("[data-note]").textContent = result.headline.note;
+      out.querySelector("[data-rows]").innerHTML = result.rows.map(function (row) {
+        return "<div><span>" + row.label + "</span><b>" + row.value + "</b></div>";
+      }).join("");
+    }
+
+    fields.addEventListener("input", update);
+    fields.addEventListener("change", update);
+    update();
+  }
+
+  /* ---------------- asset class switcher ---------------- */
+  var assetCards = document.querySelectorAll(".asset[data-asset]");
+  var assetPanels = document.querySelectorAll(".asset-panel");
+
+  function showAsset(slug, scroll) {
+    var found = false;
+    Array.prototype.forEach.call(assetPanels, function (panel) {
+      var on = panel.getAttribute("data-slug") === slug;
+      panel.classList.toggle("on", on);
+      if (on) found = true;
+    });
+    if (!found) return;
+    Array.prototype.forEach.call(assetCards, function (card) {
+      card.classList.toggle("on", card.getAttribute("data-asset") === slug);
+    });
+    buildCalc(slug);
+    if (scroll) {
+      var target = document.getElementById("asset-panels");
+      if (target) target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }
+  }
+
+  Array.prototype.forEach.call(assetCards, function (card) {
+    card.addEventListener("click", function (event) {
+      event.preventDefault();
+      var slug = card.getAttribute("data-asset");
+      showAsset(slug, true);
+      try { history.replaceState(null, "", "#asset-" + slug); } catch (e) {}
+    });
+  });
+
+  var initialAsset = (window.location.hash || "").replace("#asset-", "");
+  showAsset(CALCS[initialAsset] ? initialAsset : "equity", false);
 
   /* ---------------- risk library filter ---------------- */
   var chips = document.querySelectorAll(".chip");
